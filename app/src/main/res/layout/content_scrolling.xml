@@ -24,7 +24,8 @@
             android:id="@+id/button02"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/tikects_papel" />
+            android:text="@string/tikects_papel"
+            android:onClick="scanQRCode"/>
         <Button
             android:id="@+id/button03"
             android:layout_width="match_parent"
