@@ -8,10 +8,38 @@
     tools:context="es.prodacon.movil.ticketsriego.ScrollingActivity"
     tools:showIn="@layout/activity_scrolling">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/text_margin"
-        android:text="@string/large_text" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="30dp">
+        <Button
+            android:id="@+id/button01"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/arrancar_motor"
+            android:onClick="execArrancaMotor"/>
+        <Button
+            android:id="@+id/button02"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tikects_papel" />
+        <Button
+            android:id="@+id/button03"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tikects_ordenador" />
+        <Button
+            android:id="@+id/button04"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/ver_regantes" />
+        <Button
+            android:id="@+id/button05"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/parar_motor" />
+    </LinearLayout>
 
 </android.support.v4.widget.NestedScrollView>

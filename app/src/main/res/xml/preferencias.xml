@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <CheckBoxPreference
+        android:key="notificaciones"
+        android:title="Mandar notificaciones"
+        android:summary="Notificar al comunero"/>
+    <EditTextPreference
+        android:key="tlf_motor"
+        android:title="Número de teléfono motor"
+        android:summary="Teléfono que arranca/para el motor"
+        android:defaultValue="693065280"/>
+</PreferenceScreen>
