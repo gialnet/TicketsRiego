@@ -2,11 +2,16 @@ package es.prodacon.movil.ticketsriego;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -16,14 +21,32 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.BreakIterator;
 
-public class ScrollingActivity extends AppCompatActivity {
+import static android.location.LocationManager.GPS_PROVIDER;
 
+public class ScrollingActivity extends AppCompatActivity implements LocationListener  {
+
+    private String QRScaneado;
+    private LocationManager locationManager;
+
+    public String getQRScaneado() {
+        return QRScaneado;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +63,51 @@ public class ScrollingActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationManager.requestLocationUpdates(GPS_PROVIDER, 2000, 1, (LocationListener) this);
+
+
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+
+        String msg = "New Latitude: " + location.getLatitude()
+                + "New Longitude: " + location.getLongitude();
+
+        Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+        Toast.makeText(getBaseContext(), "Gps is turned on!! ",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        startActivity(intent);
+        Toast.makeText(getBaseContext(), "Gps is turned off!! ",
+                Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -125,15 +193,76 @@ public class ScrollingActivity extends AppCompatActivity {
 
                         //this.elemQuery.setText(contents);
                         //this.resume = false;
-                        Log.d("SEARCH_EAN", "OK, EAN: " + contents + ", FORMAT: " + format);
+                        this.QRScaneado=contents;
+                        Log.d("SEARCH_QR", "OK, QR: " + contents + ", FORMATO: " + format);
                     } else {
-                        Log.e("SEARCH_EAN", "IntentResult je NULL!");
+                        Log.e("SEARCH_QR", "IntentResult fue NULL!");
                     }
                 } else if (resultCode == Activity.RESULT_CANCELED) {
-                    Log.e("SEARCH_EAN", "CANCEL");
+                    Log.e("SEARCH_QR", "CANCELADO EL SCANEO");
                 }
         }
     }
 
+    /**
+     *
+     * @param QRLeido
+     */
+    private void ProcesarQR(String QRLeido) {
+
+       // Activar temporizador con alarma
+       // Leer las coordenadas GPS
+       // Grabar en SQLite
+       // Grabar en PostgreSQL
+
+        //Desde la version 3 de android, no se permite abrir una conexión de red desde el thread principal.
+        //Por lo tanto se debe crear uno nuevo.
+        sqlThread.start();
+
+    }
+
+    /**
+     * Arrancar un hilo nuevo para la consulta SQL
+     */
+    Thread sqlThread = new Thread() {
+        public void run() {
+            try {
+                Class.forName("org.postgresql.Driver");
+                // "jdbc:postgresql://IP:PUERTO/DB", "USER", "PASSWORD");
+                // Si estás utilizando el emulador de android y tenes el PostgreSQL en tu misma PC no utilizar 127.0.0.1 o localhost como IP, utilizar 10.0.2.2
+                Connection conn = DriverManager.getConnection(
+                        "jdbc:postgresql://37.153.108.75:5432/regantes", "regantes_prodacon", "acaPCB-13");
+
+                JSONObject jsonObject = null;
+
+                //
+                try {
+                    jsonObject = (JSONObject) new JSONParser().parse(getQRScaneado());
+                } catch (ParseException e) {
+                    throw new RuntimeException("Unable to parse json " + getQRScaneado());
+                }
+
+                String Titular = (String) jsonObject.get("Titular");
+                String nTicket = (String) jsonObject.get("nTicket");
+                String Horas = (String) jsonObject.get("Horas");
+                String Precio = (String) jsonObject.get("Precio");
+                String Forma_Pago = (String) jsonObject.get("Forma Pago");
+
+                jsonObject = null;
+
+                //En el stsql se puede agregar cualquier consulta SQL deseada.
+                String stsql = "Select version()";
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(stsql);
+                rs.next();
+                System.out.println( rs.getString(1) );
+                conn.close();
+            } catch (SQLException se) {
+                System.out.println("oops! No se puede conectar. Error: " + se.toString());
+            } catch (ClassNotFoundException e) {
+                System.out.println("oops! No se encuentra la clase. Error: " + e.getMessage());
+            }
+        }
+    };
 
 }
