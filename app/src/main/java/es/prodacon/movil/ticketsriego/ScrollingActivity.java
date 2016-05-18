@@ -2,7 +2,9 @@ package es.prodacon.movil.ticketsriego;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -10,11 +12,15 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -39,18 +45,30 @@ import java.text.BreakIterator;
 
 import static android.location.LocationManager.GPS_PROVIDER;
 
-public class ScrollingActivity extends AppCompatActivity implements LocationListener  {
+public class ScrollingActivity extends AppCompatActivity implements LocationListener,SimpleDialog.OnSimpleDialogListener  {
 
     private String QRScaneado;
     private LocationManager locationManager;
+    private boolean QuiereGrabar=true;
+    private Location Posicion;
 
+    public ScrollingActivity() {
+
+    }
+
+    /**
+     * Escanear un QR
+     * @return
+     */
     public String getQRScaneado() {
         return QRScaneado;
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_scrolling);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -80,13 +98,22 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
 
     }
 
+    /**
+     * Mostrar un dialogo desde el tercer botón
+     * @param view
+     */
+    public void mostrarDialogo(View view){
+        new SimpleDialog().show(getSupportFragmentManager(), "SimpleDialog");
+    }
+
     @Override
     public void onLocationChanged(Location location) {
 
         String msg = "New Latitude: " + location.getLatitude()
                 + "New Longitude: " + location.getLongitude();
 
-        Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show();
+        this.Posicion=location;
+        // Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -97,7 +124,7 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
     @Override
     public void onProviderEnabled(String provider) {
 
-        Toast.makeText(getBaseContext(), "Gps is turned on!! ",
+        Toast.makeText(getBaseContext(), "Gps activado!! ",
                 Toast.LENGTH_SHORT).show();
     }
 
@@ -106,7 +133,7 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
 
         Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
         startActivity(intent);
-        Toast.makeText(getBaseContext(), "Gps is turned off!! ",
+        Toast.makeText(getBaseContext(), "Gps apagado!! ",
                 Toast.LENGTH_SHORT).show();
     }
 
@@ -165,9 +192,20 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
      * @param view
      */
     public void scanQRCode(View view) {
+
         //IntentIntegrator integrator = new IntentIntegrator(this);
         //integrator.initiateScan(IntentIntegrator.QR_CODE_TYPES);
+
         new IntentIntegrator(ScrollingActivity.this).initiateScan();
+
+
+        /*
+        String msg = "New Latitude: " + this.Posicion.getLatitude()
+                + "New Longitude: " + this.Posicion.getLongitude();*/
+
+        //Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show();
+        ProcesarQR();
+
     }
 
 
@@ -194,6 +232,7 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
                         //this.elemQuery.setText(contents);
                         //this.resume = false;
                         this.QRScaneado=contents;
+
                         Log.d("SEARCH_QR", "OK, QR: " + contents + ", FORMATO: " + format);
                     } else {
                         Log.e("SEARCH_QR", "IntentResult fue NULL!");
@@ -206,26 +245,36 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
 
     /**
      *
-     * @param QRLeido
      */
-    private void ProcesarQR(String QRLeido) {
+    public void ProcesarQR() {
 
        // Activar temporizador con alarma
        // Leer las coordenadas GPS
        // Grabar en SQLite
        // Grabar en PostgreSQL
 
+       // Toast.makeText(getBaseContext(), this.QRScaneado ,Toast.LENGTH_LONG).show();
         //Desde la version 3 de android, no se permite abrir una conexión de red desde el thread principal.
         //Por lo tanto se debe crear uno nuevo.
-        sqlThread.start();
+
+        new SimpleDialog().show(getSupportFragmentManager(), "SimpleDialog");
+
+        if (QuiereGrabar) {
+            AsyncTask<Void, Void, Void> Conn = new PostgreConn();
+            Conn.execute();
+        }
+
 
     }
 
     /**
      * Arrancar un hilo nuevo para la consulta SQL
      */
+    /*
     Thread sqlThread = new Thread() {
         public void run() {
+
+
             try {
                 Class.forName("org.postgresql.Driver");
                 // "jdbc:postgresql://IP:PUERTO/DB", "USER", "PASSWORD");
@@ -233,7 +282,8 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
                 Connection conn = DriverManager.getConnection(
                         "jdbc:postgresql://37.153.108.75:5432/regantes", "regantes_prodacon", "acaPCB-13");
 
-                JSONObject jsonObject = null;
+                 JSONObject jsonObject = null;
+
 
                 //
                 try {
@@ -263,6 +313,20 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
                 System.out.println("oops! No se encuentra la clase. Error: " + e.getMessage());
             }
         }
-    };
+    };*/
 
+
+    @Override
+    public void onPossitiveButtonClick() {
+
+        QuiereGrabar=true;
+        Toast.makeText(getBaseContext(), R.string.grabar,Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onNegativeButtonClick() {
+
+        QuiereGrabar=false;
+        Toast.makeText(getBaseContext(), R.string.cancelado ,Toast.LENGTH_LONG).show();
+    }
 }

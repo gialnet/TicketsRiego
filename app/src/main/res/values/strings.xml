@@ -7,4 +7,6 @@
     <string name="parar_motor">Parar Motor</string>
     <string name="action_settings">Ajustes</string>
     <string name="scan_qr_code">Scan QR Code</string>
+    <string name="cancelado">Cancelado</string>
+    <string name="grabar">Procedo a grabar</string>
 </resources>
