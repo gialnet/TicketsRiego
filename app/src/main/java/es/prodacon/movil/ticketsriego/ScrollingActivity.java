@@ -204,7 +204,8 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
                 + "New Longitude: " + this.Posicion.getLongitude();*/
 
         //Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show();
-        ProcesarQR();
+
+
 
     }
 
@@ -229,9 +230,11 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
                         String contents = intentResult.getContents();
                         String format = intentResult.getFormatName();
 
-                        //this.elemQuery.setText(contents);
-                        //this.resume = false;
                         this.QRScaneado=contents;
+
+                        Intent intent2 = new Intent(this, MostrarQR.class);
+                        intent2.putExtra("QRScaneado", this.QRScaneado);
+                        startActivityForResult(intent2,12345);
 
                         Log.d("SEARCH_QR", "OK, QR: " + contents + ", FORMATO: " + format);
                     } else {
@@ -239,6 +242,17 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
                     }
                 } else if (resultCode == Activity.RESULT_CANCELED) {
                     Log.e("SEARCH_QR", "CANCELADO EL SCANEO");
+                }
+            case 12345:
+                if (resultCode == Activity.RESULT_OK)
+                {
+                    // salio por confirmar
+                    String res = intent.getExtras().getString("resultado");
+                    Toast.makeText(getBaseContext(), res , Toast.LENGTH_LONG).show();
+                }
+                else
+                {
+                    // Salio por cancelar
                 }
         }
     }

@@ -11,10 +11,25 @@
 <RelativeLayout android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:android="http://schemas.android.com/apk/res/android">
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Confirmar"
+        android:id="@+id/button_confirm"
+        android:onClick="ConfirmarTicket" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="cancelar"
+        android:id="@+id/button_cancelar"
+        android:layout_alignBottom="@+id/button_confirm"
+        android:layout_toRightOf="@id/button_confirm"
+        android:onClick="CancelaTicket" />
     <TextView
         android:id="@+id/t_nombre"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@id/button_confirm"
         android:text="Nombre:"
         android:textAppearance="?android:attr/textAppearanceMedium" />
     <EditText
@@ -22,78 +37,100 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/t_nombre"
-        android:hint="Titular" >
+        android:enabled="false">
         <requestFocus/>
     </EditText>
     <TextView
-        android:id="@+id/t_tipo"
+        android:id="@+id/t_nticket"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/nombre"
-        android:text="Tipo:"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-    <Spinner
-        android:id="@+id/tipo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@id/t_tipo"
-        android:layout_toRightOf="@id/t_tipo" />
-    <TextView
-        android:id="@+id/t_direccion"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/t_tipo"
-        android:text="Dirección:"
+        android:text="Nº Ticket:"
         android:textAppearance="?android:attr/textAppearanceMedium" />
     <EditText
-        android:id="@+id/direccion"
+        android:id="@+id/nticket"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/t_direccion"
-        android:hint="dirección del lugar"
-        android:inputType="textPostalAddress" />
+        android:layout_toRightOf="@id/t_nticket"
+        android:layout_alignTop="@id/t_nticket"
+        android:enabled="false">
+    </EditText>
     <TextView
-        android:id="@+id/t_telefono"
+        android:id="@+id/t_nestanque"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/direccion"
-        android:text="Telefono:"
+        android:layout_below="@id/nticket"
+        android:text="NºEstanque:"
         android:textAppearance="?android:attr/textAppearanceMedium" />
     <EditText
-        android:id="@+id/telefono"
+        android:id="@+id/nestanque"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/t_telefono"
-        android:layout_alignTop="@id/t_telefono"
-        android:hint="teléfono para contactar"
-        android:inputType="phone" />
+        android:layout_toRightOf="@id/t_nestanque"
+        android:layout_alignTop="@id/t_nestanque"
+        android:enabled="false">
+    </EditText>
     <TextView
-        android:id="@+id/t_url"
+        android:id="@+id/t_horas"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/telefono"
-        android:text="Url:"
+        android:layout_below="@id/nestanque"
+        android:text="Horas:"
         android:textAppearance="?android:attr/textAppearanceMedium" />
     <EditText
-        android:id="@+id/url"
+        android:id="@+id/horas"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/t_url"
-        android:hint="página web"
-        android:inputType="textUri" />
+        android:layout_toRightOf="@id/t_horas"
+        android:layout_alignTop="@id/t_horas"
+        android:inputType="textPostalAddress"
+        android:enabled="false" />
     <TextView
-        android:id="@+id/t_comentario"
+        android:id="@+id/t_importe"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/url"
-        android:text="Comentario:"
+        android:layout_below="@id/horas"
+        android:text="Importe:"
         android:textAppearance="?android:attr/textAppearanceMedium" />
     <EditText
-        android:id="@+id/comentario"
+        android:id="@+id/importe"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/t_comentario"
-        android:hint="introduce tus notas"
-        android:inputType="textMultiLine" />
+        android:layout_toRightOf="@id/t_importe"
+        android:layout_alignTop="@id/t_importe"
+        android:inputType="number"
+        android:enabled="false" />
+    <TextView
+        android:id="@+id/t_movil"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/importe"
+        android:text="Movil:"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    <EditText
+        android:id="@+id/movil"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/t_movil"
+        android:inputType="phone"
+        android:enabled="false" />
+    <TextView
+        android:id="@+id/t_email"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/movil"
+        android:text="email"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    <EditText
+        android:id="@+id/email"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/t_email"
+        android:inputType="textEmailAddress"
+        android:enabled="false" />
+
+
+
+
 </RelativeLayout>
 </android.support.v4.widget.NestedScrollView>
