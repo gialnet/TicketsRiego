@@ -36,6 +36,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -44,6 +45,7 @@ import java.sql.Statement;
 import java.text.BreakIterator;
 
 import static android.location.LocationManager.GPS_PROVIDER;
+import static java.lang.Integer.parseInt;
 
 public class ScrollingActivity extends AppCompatActivity implements LocationListener,SimpleDialog.OnSimpleDialogListener  {
 
@@ -51,6 +53,7 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
     private LocationManager locationManager;
     private boolean QuiereGrabar=true;
     private Location Posicion;
+    private String Observaciones="";
 
     public ScrollingActivity() {
 
@@ -243,17 +246,18 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
                 } else if (resultCode == Activity.RESULT_CANCELED) {
                     Log.e("SEARCH_QR", "CANCELADO EL SCANEO");
                 }
+                break;
             case 12345:
                 if (resultCode == Activity.RESULT_OK)
                 {
                     // salio por confirmar
                     String res = intent.getExtras().getString("resultado");
-                    Toast.makeText(getBaseContext(), res , Toast.LENGTH_LONG).show();
+                    Observaciones = intent.getExtras().getString("observaciones");
+                    PostgreInsertTicket inserta = new PostgreInsertTicket();
+                    inserta.execute();
+                    //Toast.makeText(getBaseContext(), res , Toast.LENGTH_LONG).show();
                 }
-                else
-                {
-                    // Salio por cancelar
-                }
+
         }
     }
 
@@ -272,11 +276,6 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
         //Por lo tanto se debe crear uno nuevo.
 
         new SimpleDialog().show(getSupportFragmentManager(), "SimpleDialog");
-
-        if (QuiereGrabar) {
-            AsyncTask<Void, Void, Void> Conn = new PostgreConn();
-            Conn.execute();
-        }
 
 
     }
@@ -342,5 +341,100 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
 
         QuiereGrabar=false;
         Toast.makeText(getBaseContext(), R.string.cancelado ,Toast.LENGTH_LONG).show();
+    }
+
+
+    /*
+    new AsyncTask<Integer, Void, Void>(){
+        @Override
+        protected Void doInBackground(Integer... params) {
+            // **Code**
+            return null;
+        }
+    }.execute(1, 2, 3, 4, 5);
+     */
+
+    public class PostgreInsertTicket extends AsyncTask<Void, Void, Void> {
+
+
+        private String nTicket;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            String vQR=getQRScaneado();
+            JSONObject jsonObject = null;
+
+            try {
+                jsonObject = (JSONObject) new JSONParser().parse(vQR);
+            } catch (ParseException e) {
+                throw new RuntimeException("Unable to parse json " + vQR);
+            }
+
+            nTicket = (String) jsonObject.get("nTicket");
+
+            jsonObject = null;
+
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            Connection conexion = null;
+            CallableStatement sentencia = null;
+            ResultSet resultado = null;
+
+
+
+            try {
+                Class.forName("org.postgresql.Driver");
+                 conexion = DriverManager.getConnection("jdbc:postgresql://37.153.108.75:5432/regantes", "regantes_prodacon", "acaPCB-13");
+
+
+
+                String consultaSQL = "{ call SaveTicketDone (?,?,?,?) }";
+
+                sentencia = conexion.prepareCall(consultaSQL);
+                sentencia.setInt(1,parseInt(nTicket));
+                sentencia.setDouble(2,Posicion.getLatitude());
+                sentencia.setDouble(3,Posicion.getLongitude());
+                sentencia.setString(4,Observaciones);
+
+                sentencia.execute();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println(e.getMessage());
+                System.err.println("Error: Cant connect!");
+                conexion = null;
+            } finally {
+                if (resultado != null) {
+                    try {
+                        resultado.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.err.println(e.getMessage());
+                    }
+                }
+                if (sentencia != null) {
+                    try {
+                        sentencia.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.err.println(e.getMessage());
+                    }
+                }
+                if (conexion != null) {
+                    try {
+                        conexion.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.err.println(e.getMessage());
+                    }
+                }
+            }
+            System.err.println("----- PostgreSQL query ends correctly!-----");
+            return null;
+        }
     }
 }

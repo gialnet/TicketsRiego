@@ -3,6 +3,7 @@ package es.prodacon.movil.ticketsriego;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -82,6 +83,9 @@ public class MostrarQR extends AppCompatActivity {
     {
         Intent intencion = new Intent();
         intencion.putExtra("resultado","confirma");
+        EditText obse = (EditText) findViewById(R.id.observaciones);
+        String texto=obse.getText().toString();
+        intencion.putExtra("observaciones", texto);
         setResult(RESULT_OK, intencion);
         finish();
     }
@@ -94,7 +98,7 @@ public class MostrarQR extends AppCompatActivity {
     {
         Intent intencion = new Intent();
         intencion.putExtra("resultado","cancela");
-        setResult(RESULT_OK, intencion);
+        setResult(RESULT_CANCELED, intencion);
         finish();
     }
 
