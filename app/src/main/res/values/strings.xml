@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">Tickets Riego</string>
     <string name="arrancar_motor">Arrancar Motor</string>
-    <string name="tikects_papel">Tikects Papel</string>
-    <string name="tikects_ordenador">Tikects Ordenador</string>
+    <string name="tikects_papel">Tickets Papel</string>
+    <string name="tikects_ordenador">Tickets Ordenador</string>
     <string name="ver_regantes">Ver Regantes</string>
     <string name="parar_motor">Parar Motor</string>
     <string name="action_settings">Ajustes</string>
