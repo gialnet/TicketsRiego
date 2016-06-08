@@ -14,6 +14,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -47,12 +48,13 @@ import java.text.BreakIterator;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static java.lang.Integer.parseInt;
 
-public class ScrollingActivity extends AppCompatActivity implements LocationListener,SimpleDialog.OnSimpleDialogListener  {
+//public class ScrollingActivity extends AppCompatActivity implements LocationListener,SimpleDialog.OnSimpleDialogListener  {
+public class ScrollingActivity extends AppCompatActivity implements SimpleDialog.OnSimpleDialogListener  {
 
     private String QRScaneado;
-    private LocationManager locationManager;
+    //private LocationManager locationManager;
     private boolean QuiereGrabar=true;
-    private Location Posicion;
+    //private Location Posicion;
     private String Observaciones="";
 
     public ScrollingActivity() {
@@ -85,6 +87,7 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
             }
         });
 
+        /*
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -96,7 +99,7 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        locationManager.requestLocationUpdates(GPS_PROVIDER, 2000, 1, (LocationListener) this);
+        locationManager.requestLocationUpdates(GPS_PROVIDER, 2000, 1, (LocationListener) this);*/
 
 
     }
@@ -108,7 +111,7 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
     public void mostrarDialogo(View view){
         new SimpleDialog().show(getSupportFragmentManager(), "SimpleDialog");
     }
-
+/*
     @Override
     public void onLocationChanged(Location location) {
 
@@ -139,7 +142,7 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
         Toast.makeText(getBaseContext(), "Gps apagado!! ",
                 Toast.LENGTH_SHORT).show();
     }
-
+*/
     /**
      * Arrancar el motor
      *
@@ -158,14 +161,55 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
 
                 return;
             }
-            SharedPreferences prefs = getSharedPreferences("preferencias", MODE_PRIVATE);
-            String tlf_motor = prefs.getString("tlf_motor", "Ajuste valores");
+            SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            String tlf_motor = mySharedPreferences.getString("tlf_motor", "");
+
+
+           // Log.d("SEARCH_TLF", "telefono: : " +  tlf_motor);
+
             startActivity(new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + tlf_motor)));
+
+            // Anotar en la base de datos Arrancar el motor
+            PostgreStartEngine startE = new PostgreStartEngine();
+            startE.execute();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Parar el motor
+     *
+     * @param view
+     */
+    public void execStopMotor(View view) {
+        try {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+
+                return;
+            }
+            SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            String tlf_motor = mySharedPreferences.getString("tlf_motor", "");
+
+
+            // Log.d("SEARCH_TLF", "telefono: : " +  tlf_motor);
+
+            startActivity(new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + tlf_motor)));
+
+            // Anotar en la base de datos Arrancar el motor
+            PostgreStopEngine stopE = new PostgreStopEngine();
+            stopE.execute();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -354,10 +398,15 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
     }.execute(1, 2, 3, 4, 5);
      */
 
+    /**
+     * Insertar un nuevo ticket leido desde un QR
+     */
     public class PostgreInsertTicket extends AsyncTask<Void, Void, Void> {
 
 
         private String nTicket;
+        private String Estanque;
+        private String Minutos;
 
         @Override
         protected void onPreExecute() {
@@ -372,6 +421,8 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
             }
 
             nTicket = (String) jsonObject.get("nTicket");
+            Estanque = (String) jsonObject.get("NEstanque");
+            Minutos = (String) jsonObject.get("Minutos");
 
             jsonObject = null;
 
@@ -392,13 +443,16 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
 
 
 
-                String consultaSQL = "{ call SaveTicketDone (?,?,?,?) }";
+                String consultaSQL = "{ call ReadTicketQR (?,?,?) }";
 
                 sentencia = conexion.prepareCall(consultaSQL);
                 sentencia.setInt(1,parseInt(nTicket));
-                sentencia.setDouble(2,Posicion.getLatitude());
-                sentencia.setDouble(3,Posicion.getLongitude());
-                sentencia.setString(4,Observaciones);
+                sentencia.setInt(2,parseInt(Estanque));
+                sentencia.setInt(3,parseInt(Minutos));
+                //sentencia.setDouble(2,Posicion.getLatitude());
+                //sentencia.setDouble(3,Posicion.getLongitude());
+                //sentencia.setString(4,Observaciones);
+
 
                 sentencia.execute();
 
@@ -434,6 +488,132 @@ public class ScrollingActivity extends AppCompatActivity implements LocationList
                 }
             }
             System.err.println("----- PostgreSQL query ends correctly!-----");
+            return null;
+        }
+    }
+
+    /**
+     * Gestión de inicio/parado del motor de riego
+     */
+    public class PostgreStartEngine extends AsyncTask<Void, Void, Void> {
+
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            Connection conexion = null;
+            CallableStatement sentencia = null;
+            ResultSet resultado = null;
+
+
+
+            try {
+                Class.forName("org.postgresql.Driver");
+                conexion = DriverManager.getConnection("jdbc:postgresql://37.153.108.75:5432/regantes", "regantes_prodacon", "acaPCB-13");
+
+
+
+                String consultaSQL = "{ call StartEngine () }";
+
+                sentencia = conexion.prepareCall(consultaSQL);
+
+                sentencia.execute();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println(e.getMessage());
+                System.err.println("Error: Cant connect!");
+                conexion = null;
+            } finally {
+                if (resultado != null) {
+                    try {
+                        resultado.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.err.println(e.getMessage());
+                    }
+                }
+                if (sentencia != null) {
+                    try {
+                        sentencia.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.err.println(e.getMessage());
+                    }
+                }
+                if (conexion != null) {
+                    try {
+                        conexion.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.err.println(e.getMessage());
+                    }
+                }
+            }
+            System.err.println("----- PostgreSQL arrancar motor ends correctly!-----");
+            return null;
+        }
+    }
+
+    /**
+     * Parar el motor
+     */
+    public class PostgreStopEngine extends AsyncTask<Void, Void, Void> {
+
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            Connection conexion = null;
+            CallableStatement sentencia = null;
+            ResultSet resultado = null;
+
+
+
+            try {
+                Class.forName("org.postgresql.Driver");
+                conexion = DriverManager.getConnection("jdbc:postgresql://37.153.108.75:5432/regantes", "regantes_prodacon", "acaPCB-13");
+
+
+
+                String consultaSQL = "{ call StoptEngine () }";
+
+                sentencia = conexion.prepareCall(consultaSQL);
+
+                sentencia.execute();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println(e.getMessage());
+                System.err.println("Error: Cant connect!");
+                conexion = null;
+            } finally {
+                if (resultado != null) {
+                    try {
+                        resultado.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.err.println(e.getMessage());
+                    }
+                }
+                if (sentencia != null) {
+                    try {
+                        sentencia.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.err.println(e.getMessage());
+                    }
+                }
+                if (conexion != null) {
+                    try {
+                        conexion.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.err.println(e.getMessage());
+                    }
+                }
+            }
+            System.err.println("----- PostgreSQL parar motor ends correctly!-----");
             return null;
         }
     }

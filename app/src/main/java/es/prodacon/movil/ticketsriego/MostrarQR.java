@@ -44,7 +44,8 @@ public class MostrarQR extends AppCompatActivity {
         String Titular = (String) jsonObject.get("Titular");
         String NEstanque = (String) jsonObject.get("NEstanque");
         String nTicket = (String) jsonObject.get("nTicket");
-        String Horas = (String) jsonObject.get("Horas");
+        String Minutos = (String) jsonObject.get("Minutos");
+        //String Horas = (String) jsonObject.get("Horas");
         String Precio = (String) jsonObject.get("Precio");
         //String Forma_Pago = (String) jsonObject.get("Forma Pago");
         String Email = (String) jsonObject.get("Email");
@@ -60,7 +61,7 @@ public class MostrarQR extends AppCompatActivity {
         ticket.setText(nTicket);
 
         EditText horas = (EditText) findViewById(R.id.horas);
-        horas.setText(Horas);
+        horas.setText(Minutos);
 
         EditText precio = (EditText) findViewById(R.id.importe);
         precio.setText(Precio);

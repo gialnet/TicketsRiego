@@ -30,7 +30,7 @@
             android:id="@+id/button03"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/tikects_ordenador"
+            android:text="@string/regar"
             android:onClick="mostrarDialogo"/>
         <Button
             android:id="@+id/button04"
@@ -42,7 +42,8 @@
             android:id="@+id/button05"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/parar_motor" />
+            android:text="@string/parar_motor"
+            android:onClick="execStopMotor"/>
     </LinearLayout>
 
 </android.support.v4.widget.NestedScrollView>
