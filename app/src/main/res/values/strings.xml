@@ -1,8 +1,10 @@
 <resources>
     <string name="app_name">Tickets Riego</string>
     <string name="arrancar_motor">Arrancar Motor</string>
-    <string name="tikects_papel">Tickets Papel</string>
-    <string name="regar">Regar</string>
+    <string name="tikects_papel">Buzón Tickets Papel</string>
+    <string name="regar">Regar Ticket Buzón</string>
+    <string name="sin_ticket">Regar sin Ticket</string>
+    <string name="ordenador_ticket">Regar Pedidos WEB</string>
     <string name="ver_regantes">Ver Regantes</string>
     <string name="parar_motor">Parar Motor</string>
     <string name="action_settings">Ajustes</string>

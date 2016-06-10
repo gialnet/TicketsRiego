@@ -240,20 +240,21 @@ public class ScrollingActivity extends AppCompatActivity implements SimpleDialog
      */
     public void scanQRCode(View view) {
 
-        //IntentIntegrator integrator = new IntentIntegrator(this);
-        //integrator.initiateScan(IntentIntegrator.QR_CODE_TYPES);
-
         new IntentIntegrator(ScrollingActivity.this).initiateScan();
 
+    }
 
-        /*
-        String msg = "New Latitude: " + this.Posicion.getLatitude()
-                + "New Longitude: " + this.Posicion.getLongitude();*/
-
-        //Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show();
-
-
-
+    /**
+     *
+     * @param view
+     */
+    public void mostrarCrono(View view)
+    {
+        Log.d("SEARCH_CRONO", "ENTRO por crono" );
+        Intent intent3 = new Intent(this, ShowCrono.class);
+        intent3.putExtra("minutos", "1");
+        startActivityForResult(intent3,12);
+        Log.d("SEARCH_CRONO", "Paso por crono" );
     }
 
 
@@ -324,53 +325,6 @@ public class ScrollingActivity extends AppCompatActivity implements SimpleDialog
 
     }
 
-    /**
-     * Arrancar un hilo nuevo para la consulta SQL
-     */
-    /*
-    Thread sqlThread = new Thread() {
-        public void run() {
-
-
-            try {
-                Class.forName("org.postgresql.Driver");
-                // "jdbc:postgresql://IP:PUERTO/DB", "USER", "PASSWORD");
-                // Si estás utilizando el emulador de android y tenes el PostgreSQL en tu misma PC no utilizar 127.0.0.1 o localhost como IP, utilizar 10.0.2.2
-                Connection conn = DriverManager.getConnection(
-                        "jdbc:postgresql://37.153.108.75:5432/regantes", "regantes_prodacon", "acaPCB-13");
-
-                 JSONObject jsonObject = null;
-
-
-                //
-                try {
-                    jsonObject = (JSONObject) new JSONParser().parse(getQRScaneado());
-                } catch (ParseException e) {
-                    throw new RuntimeException("Unable to parse json " + getQRScaneado());
-                }
-
-                String Titular = (String) jsonObject.get("Titular");
-                String nTicket = (String) jsonObject.get("nTicket");
-                String Horas = (String) jsonObject.get("Horas");
-                String Precio = (String) jsonObject.get("Precio");
-                String Forma_Pago = (String) jsonObject.get("Forma Pago");
-
-                jsonObject = null;
-
-                //En el stsql se puede agregar cualquier consulta SQL deseada.
-                String stsql = "Select version()";
-                Statement st = conn.createStatement();
-                ResultSet rs = st.executeQuery(stsql);
-                rs.next();
-                System.out.println( rs.getString(1) );
-                conn.close();
-            } catch (SQLException se) {
-                System.out.println("oops! No se puede conectar. Error: " + se.toString());
-            } catch (ClassNotFoundException e) {
-                System.out.println("oops! No se encuentra la clase. Error: " + e.getMessage());
-            }
-        }
-    };*/
 
 
     @Override
