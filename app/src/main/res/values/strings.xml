@@ -1,4 +1,5 @@
 <resources>
+    <string name="account_type">es.prodacon.movil.ticketsriego.account</string>
     <string name="app_name">Tickets Riego</string>
     <string name="arrancar_motor">Arrancar Motor</string>
     <string name="tikects_papel">Buzón Tickets Papel</string>
